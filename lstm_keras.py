@@ -4,21 +4,30 @@ import pandas
 import math
 from keras.models import Sequential
 from keras.layers import Dense
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error
 
-# fix random seed for reproducibility
-numpy.random.seed(7)
-# load the dataset
-dataframe = pandas.read_csv('/Users/daihanru/Desktop/研究生小论文/时间序列数据9-8-2.csv', usecols=[1], engine='python', skipfooter=3)
+# # 固定让模能复现
+# numpy.random.seed(7)
+
+# 加载数据
+dataframe = pandas.read_csv('/Users/daihanru/Desktop/研究生小论文/时间序列数据9-8-2.csv', usecols=[1], engine='python',
+                            skipfooter=3)
 dataset = dataframe.values
 dataset = dataset.astype('float32')
-# split into train and test sets
-train_size = int(len(dataset) * 0.66)
+
+# 归一化数据
+scaler = MinMaxScaler(feature_range=(0, 1))
+dataset = scaler.fit_transform(dataset)
+
+# 分为训练和测试数据
+train_size = int(len(dataset) * 0.7)
 test_size = len(dataset) - train_size
 train, test = dataset[0:train_size, :], dataset[train_size:len(dataset), :]
 print(len(train), len(test))
 
 
-# convert an array of values into a dataset matrix
+# 根据格式创建数据
 def create_dataset(dataset, look_back=1):
     dataX, dataY = [], []
     for i in range(len(dataset) - look_back - 1):
@@ -28,34 +37,45 @@ def create_dataset(dataset, look_back=1):
     return numpy.array(dataX), numpy.array(dataY)
 
 
-# reshape into X=t and Y=t+1
-look_back = 1
+# 根据look_back调整数据集 如look_back=3 则数据的一行为 t-3 t-2 t-1 t
+look_back = 2
 trainX, trainY = create_dataset(train, look_back)
 testX, testY = create_dataset(test, look_back)
-# create and fit Multilayer Perceptron model
+
+# 创建多层的lstm模型
 model = Sequential()
 model.add(Dense(8, input_dim=look_back, activation='relu'))
 model.add(Dense(1))
 model.compile(loss='mean_squared_error', optimizer='adam')
-model.fit(trainX, trainY, epochs=20, batch_size=2, verbose=2)
-# Estimate model performance
-trainScore = model.evaluate(trainX, trainY, verbose=0)
-print('Train Score: %.2f MSE (%.2f RMSE)' % (trainScore, math.sqrt(trainScore)))
-testScore = model.evaluate(testX, testY, verbose=0)
-print('Test Score: %.2f MSE (%.2f RMSE)' % (testScore, math.sqrt(testScore)))
-# generate predictions for training
+model.fit(trainX, trainY, epochs=100, batch_size=2, verbose=2)
+
+# 预测
 trainPredict = model.predict(trainX)
 testPredict = model.predict(testX)
-# shift train predictions for plotting
+
+# 反标准化
+trainPredict = scaler.inverse_transform(trainPredict)
+trainY = scaler.inverse_transform([trainY])
+testPredict = scaler.inverse_transform(testPredict)
+testY = scaler.inverse_transform([testY])
+dataset = scaler.inverse_transform(dataset)
+
+# 评价model效果
+trainScore = mean_squared_error(trainY[0], trainPredict[:, 0])
+testScore = mean_squared_error(testY[0], testPredict[:, 0])
+print('Train Score: %.2f MSE (%.2f RMSE)' % (trainScore, math.sqrt(trainScore)))
+print('Test Score: %.2f MSE (%.2f RMSE)' % (testScore, math.sqrt(testScore)))
+
+# 画数据
 trainPredictPlot = numpy.empty_like(dataset)
 trainPredictPlot[:, :] = numpy.nan
 trainPredictPlot[look_back:len(trainPredict) + look_back, :] = trainPredict
-# shift test predictions for plotting
+
 testPredictPlot = numpy.empty_like(dataset)
 testPredictPlot[:, :] = numpy.nan
 testPredictPlot[len(trainPredict) + (look_back * 2) + 1:len(dataset) - 1, :] = testPredict
-# plot baseline and predictions
+
 plt.plot(dataset[6000:6100])
-# plt.plot(trainPredictPlot)
 plt.plot(testPredictPlot[6000:6100])
+
 plt.show()

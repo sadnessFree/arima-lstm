@@ -27,12 +27,12 @@ series = read_csv('/Users/daihanru/Desktop/研究生小论文/时间序列数据
 X = series.values
 X = X.astype('float32')
 
-size = int(len(X) * 0.66)
-train, test = X[0:size], X[size:len(X)]
+size = 6000
+train, test = X[0:size], X[size:size + 100]
 history = [x for x in train]
 predictions = list()
 for t in range(len(test)):
-    model = ARIMA(history, order=(5, 1, 0))
+    model = ARIMA(history, order=(4, 0, 0))
     model_fit = model.fit(disp=0)
     output = model_fit.forecast()
     yhat = output[0]
@@ -41,7 +41,7 @@ for t in range(len(test)):
     history.append(obs)
     print('predicted=%f, expected=%f' % (yhat, obs))
 error = mean_squared_error(test, predictions)
-print('Test MSE: %.3f' % error)
+print('Test MSE: %.3f RMSE:%.3f' % (error, math.sqrt(error)))
 # plot
 plt.plot(test)
 plt.plot(predictions, color='red')
