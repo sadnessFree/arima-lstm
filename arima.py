@@ -17,7 +17,7 @@ def mean_a_p_e(y_true, y_pred):
     return sum / len(y_true)
 
 
-series = read_csv('/Users/daihanru/Desktop/研究生小论文/时间序列数据9-8.csv', header=0, parse_dates=[0],
+series = read_csv('/Users/daihanru/Desktop/arima-lstm/DataSet/FEB15.csv', usecols=[2, 3], header=0, parse_dates=[0],
                   index_col=0,
                   squeeze=True,
                   date_parser=parser)
@@ -26,14 +26,14 @@ X = X.astype('float32')
 
 # x = test_stationarity(X)
 # v, p, q, i = proper_model(X, 10)
-size = 6003
-arima_train, arima_test = X[0:size], X[size:6009]
+size = 1000
+arima_train, arima_test = X[0:size], X[1000:1020]
 history = [x for x in arima_train]
 predictions = list()
-# model = ARIMA(history, order=(6, 0, 4)).fit()
-# predictions = model.predict(6000, 6099, dynamic=True)
+# model = ARIMA(history, order=(5, 1, 1)).fit()
+# predictions = model.predict(1000, 1019, dynamic=True)
 for t in range(len(arima_test)):
-    model = ARIMA(history, order=(5, 0, 0))
+    model = ARIMA(history, order=(5, 1, 1))
     model_fit = model.fit(disp=0)
     output = model_fit.forecast()
     yhat = output[0]

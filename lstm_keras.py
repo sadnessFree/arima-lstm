@@ -4,6 +4,7 @@ import pandas
 import math
 from keras.models import Sequential
 from keras.layers import Dense
+from keras.layers import LSTM
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 
@@ -21,7 +22,7 @@ dataset = dataset.astype('float32')
 # dataset = scaler.fit_transform(dataset)
 
 # 分为训练和测试数据
-train_size = int(len(dataset) * 0.7)
+train_size = int(len(dataset) * 0.6)
 test_size = len(dataset) - train_size
 train, test = dataset[0:train_size, :], dataset[train_size:len(dataset), :]
 print(len(train), len(test))
@@ -40,7 +41,7 @@ def create_dataset(dataset, look_back=1):
 
 
 # 根据look_back调整数据集 如look_back=3 则数据的一行为 t-3 t-2 t-1 t
-look_back = 3
+look_back = 5
 trainX, trainY = create_dataset(train, look_back)
 testX, testY = create_dataset(test, look_back)
 
