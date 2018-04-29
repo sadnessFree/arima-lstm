@@ -5,10 +5,11 @@ import matplotlib.pyplot as plt
 import arima
 from keras.models import load_model
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
 from sklearn.preprocessing import MinMaxScaler
 from muilt_lstm import series_to_supervised
 
-look_back = 10
+look_back = 8
 
 # 加载数据
 dataframe = pandas.read_csv('/Users/daihanru/Desktop/arima-lstm/DataSet/FEB15.csv', usecols=[2, 3], engine='python',
@@ -27,7 +28,7 @@ print(reframed.head())
 
 values = reframed.values
 lstm_size = arima.size - look_back
-test = values[lstm_size:lstm_size + arima.test_size + 1, :]
+test = values[lstm_size:lstm_size + arima.test_size, :]
 test_X, test_y = test[:, :-1], test[:, -1]
 # reshape input to be 3D [samples, timesteps, features]
 test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
@@ -48,18 +49,43 @@ inv_y = numpy.concatenate((test_y, test_X[:, 1:]), axis=1)
 inv_y = scaler.inverse_transform(inv_y)
 inv_y = inv_y[:, 0]
 # calculate RMSE
+mse = mean_squared_error(inv_y, inv_yhat)
 rmse = math.sqrt(mean_squared_error(inv_y, inv_yhat))
-print('LSTM Test RMSE: %.3f' % rmse)
+mae = mean_absolute_error(inv_y, inv_yhat)
+print('LSTM Test MAE:%.3f MSE: %.3f RMSE:%.3f' % (mae, mse, rmse))
 
 combined = list()
 for i in range(len(inv_yhat)):
     combined.append((inv_yhat[i] + arima.predictions[i]) / 2)
+mse = mean_squared_error(inv_y, combined)
 rmse = math.sqrt(mean_squared_error(inv_y, combined))
-print('EM combined Test RMSE: %.3f' % rmse)
+mae = mean_absolute_error(inv_y, combined)
+print('EW combined Test MAE:%.3f MSE: %.3f RMSE:%.3f' % (mae, mse, rmse))
+
+windows_size = 1
+lstm_error_list = []
+arima_error_list = []
+lstm_weight = 1
+arima_weight = 1
+dyn_combined = list()
+for i in range(len(inv_yhat)):
+    lstm_error_list.append(math.fabs(inv_yhat[i] - inv_y[i]))
+    arima_error_list.append(math.fabs(arima.predictions[i] - inv_y[i]))
+    if len(lstm_error_list) >= windows_size:
+        lstm_error = numpy.average(lstm_error_list[-windows_size:])
+        arima_error = numpy.average(arima_error_list[-windows_size:])
+        lstm_weight = (1 - lstm_error / (lstm_error + arima_error)) * 2
+        arima_weight = 2 - lstm_weight
+    dyn_combined.append((lstm_weight * inv_yhat[i] + arima_weight * arima.predictions[i]) / 2)
+
+mse = mean_squared_error(inv_y, dyn_combined)
+rmse = math.sqrt(mean_squared_error(inv_y, dyn_combined))
+mae = mean_absolute_error(inv_y, dyn_combined)
+print('dyn combined Test MAE:%.3f MSE: %.3f RMSE:%.3f' % (mae, mse, rmse))
 
 plt.plot(inv_y, '-', label="real flow")
-plt.plot(arima.predictions, '--', color='y', label="ARIMA")
-plt.plot(inv_yhat, '--', color='red', label="LSTM")
-plt.plot(combined, 'x-', color='g', label="combined")
+plt.plot(arima.predictions, 'x--', color='y', label="ARIMA")
+plt.plot(inv_yhat, 'x--', color='red', label="LSTM")
+plt.plot(dyn_combined, 'x--', color='g', label="combined")
 plt.legend(loc='upper left')
 plt.show()

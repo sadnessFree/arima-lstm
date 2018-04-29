@@ -5,7 +5,6 @@ from pandas import read_csv
 from pandas import DataFrame
 from pandas import concat
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import mean_squared_error
 from keras.models import Sequential
 from keras.layers import Dense
@@ -47,7 +46,7 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
 # scaler = MinMaxScaler(feature_range=(0, 1))
 # scaled = scaler.fit_transform(values)
 # # frame as supervised learning
-# reframed = series_to_supervised(scaled, 10, 1)
+# reframed = series_to_supervised(scaled, 8, 1)
 # # drop columns we don't want to predict
 # # reframed.drop(reframed.columns[[4, 5]], axis=1, inplace=True)
 # # reframed.drop(reframed.columns[[3, 4, 5, 6, 7, 8, 10, 11]], axis=1, inplace=True)
