@@ -23,16 +23,16 @@ def create_dataset(dataset, look_back=1):
 # fix random seed for reproducibility
 numpy.random.seed(7)
 # load the dataset
-dataframe = read_csv('/Users/daihanru/Desktop/研究生小论文/时间序列数据9-8-2.csv', usecols=[1], engine='python', skipfooter=3)
+dataframe = read_csv('/Users/daihanru/Desktop/arima-lstm/DataSet/FEB15.csv', usecols=[3], engine='python', skipfooter=3)
 dataset = dataframe.values
 dataset = dataset.astype('float32')
 # normalize the dataset
 scaler = MinMaxScaler(feature_range=(0, 1))
 dataset = scaler.fit_transform(dataset)
 # split into train and test sets
-train_size = int(len(dataset) * 0.6)
-test_size = len(dataset) - train_size
-train, test = dataset[0:train_size, :], dataset[train_size:len(dataset), :]
+train_size = 1200
+test_size = 300
+train, test = dataset[0:train_size, :], dataset[train_size:train_size + test_size, :]
 print(len(train), len(test))
 # reshape into X=t and Y=t+1
 look_back = 10
