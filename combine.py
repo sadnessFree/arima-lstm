@@ -52,7 +52,12 @@ inv_y = inv_y[:, 0]
 mse = mean_squared_error(inv_y, inv_yhat)
 rmse = math.sqrt(mean_squared_error(inv_y, inv_yhat))
 mae = mean_absolute_error(inv_y, inv_yhat)
-print('LSTM Test MAE:%.3f MSE: %.3f RMSE:%.3f' % (mae, mse, rmse))
+mape = arima.mean_a_p_e(inv_y, inv_yhat)
+print('LSTM Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, mse, rmse, mape))
+plt.plot(inv_y, '-', label="real flow")
+plt.plot(inv_yhat, 'x--', color='red', label="LSTM")
+plt.legend(loc='upper left')
+plt.show(figsize=(12, 6))
 
 combined = list()
 for i in range(len(inv_yhat)):
@@ -60,9 +65,10 @@ for i in range(len(inv_yhat)):
 mse = mean_squared_error(inv_y, combined)
 rmse = math.sqrt(mean_squared_error(inv_y, combined))
 mae = mean_absolute_error(inv_y, combined)
-print('EW combined Test MAE:%.3f MSE: %.3f RMSE:%.3f' % (mae, mse, rmse))
+mape = arima.mean_a_p_e(inv_y, combined)
+print('EW combined Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, mse, rmse, mape))
 
-windows_size = 1
+windows_size = 2
 lstm_error_list = []
 arima_error_list = []
 lstm_weight = 1
@@ -81,11 +87,12 @@ for i in range(len(inv_yhat)):
 mse = mean_squared_error(inv_y, dyn_combined)
 rmse = math.sqrt(mean_squared_error(inv_y, dyn_combined))
 mae = mean_absolute_error(inv_y, dyn_combined)
-print('dyn combined Test MAE:%.3f MSE: %.3f RMSE:%.3f' % (mae, mse, rmse))
+mape = arima.mean_a_p_e(inv_y, dyn_combined)
+print('dyn combined Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, mse, rmse, mape))
 
 plt.plot(inv_y, '-', label="real flow")
 plt.plot(arima.predictions, 'x--', color='y', label="ARIMA")
 plt.plot(inv_yhat, 'x--', color='red', label="LSTM")
 plt.plot(dyn_combined, 'x--', color='g', label="combined")
 plt.legend(loc='upper left')
-plt.show()
+plt.show(figsize=(12, 6))

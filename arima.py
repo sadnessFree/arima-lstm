@@ -27,8 +27,8 @@ X = X.astype('float32')
 
 # x = test_stationarity(X)
 # v, p, q, i = proper_model(X, 10)
-size = 1310
-test_size = 20
+size = 1400
+test_size = 200
 arima_train, arima_test = X[0:size], X[size:size + test_size]
 history = [x for x in arima_train]
 predictions = list()
@@ -45,9 +45,10 @@ for t in range(len(arima_test)):
     print('predicted=%f, expected=%f' % (yhat, obs))
 error = mean_squared_error(arima_test, predictions)
 mae = mean_absolute_error(arima_test, predictions)
-print('ARIMA Test MAE:%.3f MSE: %.3f RMSE:%.3f' % (mae, error, math.sqrt(error)))
+mape = mean_a_p_e(arima_test, predictions)
+print('ARIMA Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, error, math.sqrt(error), mape))
 # plot
 plt.plot(arima_test, '-', label="real flow")
-plt.plot(predictions, '--', color='red', label="ARIMA")
+plt.plot(predictions, 'x--', color='red', label="ARIMA")
 plt.legend(loc='upper left')
 plt.show(figsize=(12, 6))
