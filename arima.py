@@ -2,6 +2,7 @@ import math
 import matplotlib.pyplot as plt
 from pandas import read_csv
 from pandas import datetime
+import statsmodels.tsa.stattools as st
 from statsmodels.tsa.arima_model import ARIMA
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
@@ -18,7 +19,7 @@ def mean_a_p_e(y_true, y_pred):
     return sum / len(y_true)
 
 
-series = read_csv('/Users/daihanru/Desktop/arima-lstm/DataSet/FEB15.csv', usecols=[2, 3], header=0, parse_dates=[0],
+series = read_csv('/Users/daihanru/Desktop/arima-lstm/DataSet/FEB15-2.csv', usecols=[2, 3], header=0, parse_dates=[0],
                   index_col=0,
                   squeeze=True,
                   date_parser=parser)
@@ -27,15 +28,18 @@ X = X.astype('float32')
 
 # x = test_stationarity(X)
 # v, p, q, i = proper_model(X, 10)
+start = 0
 size = 1400
 test_size = 200
-arima_train, arima_test = X[0:size], X[size:size + test_size]
+arima_train, arima_test = X[start:size], X[size:size + test_size]
 history = [x for x in arima_train]
 predictions = list()
+# order = st.arma_order_select_ic(X, max_ar=6, max_ma=6, ic=['aic', 'bic', 'hqic'])
+# order.bic_min_order
 # model = ARIMA(history, order=(5, 1, 1)).fit()
 # predictions = model.predict(1000, 1019, dynamic=True)
 for t in range(len(arima_test)):
-    model = ARIMA(history, order=(7, 0, 0))
+    model = ARIMA(history, order=(5, 0, 5))
     model_fit = model.fit(disp=0)
     output = model_fit.forecast()
     yhat = output[0]
@@ -51,4 +55,7 @@ print('ARIMA Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, error, math.sq
 plt.plot(arima_test, '-', label="real flow")
 plt.plot(predictions, 'x--', color='red', label="ARIMA")
 plt.legend(loc='upper left')
+plt.xlabel("period")
+plt.ylabel("volume")
+plt.ylim(0, 800)
 plt.show(figsize=(12, 6))

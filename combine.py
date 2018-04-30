@@ -12,7 +12,7 @@ from muilt_lstm import series_to_supervised
 look_back = 8
 
 # 加载数据
-dataframe = pandas.read_csv('/Users/daihanru/Desktop/arima-lstm/DataSet/FEB15.csv', usecols=[2, 3], engine='python',
+dataframe = pandas.read_csv('/Users/daihanru/Desktop/arima-lstm/DataSet/FEB15-2.csv', usecols=[2, 3], engine='python',
                             header=0, index_col=0)
 values = dataframe.values
 values = values.astype('float32')
@@ -57,6 +57,9 @@ print('LSTM Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, mse, rmse, mape
 plt.plot(inv_y, '-', label="real flow")
 plt.plot(inv_yhat, 'x--', color='red', label="LSTM")
 plt.legend(loc='upper left')
+plt.xlabel("period")
+plt.ylabel("volume")
+plt.ylim(0, 800)
 plt.show(figsize=(12, 6))
 
 combined = list()
@@ -68,7 +71,7 @@ mae = mean_absolute_error(inv_y, combined)
 mape = arima.mean_a_p_e(inv_y, combined)
 print('EW combined Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, mse, rmse, mape))
 
-windows_size = 2
+windows_size = 1
 lstm_error_list = []
 arima_error_list = []
 lstm_weight = 1
@@ -90,9 +93,13 @@ mae = mean_absolute_error(inv_y, dyn_combined)
 mape = arima.mean_a_p_e(inv_y, dyn_combined)
 print('dyn combined Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, mse, rmse, mape))
 
+plt.figure()
 plt.plot(inv_y, '-', label="real flow")
 plt.plot(arima.predictions, 'x--', color='y', label="ARIMA")
 plt.plot(inv_yhat, 'x--', color='red', label="LSTM")
 plt.plot(dyn_combined, 'x--', color='g', label="combined")
 plt.legend(loc='upper left')
+plt.xlabel("period")
+plt.ylabel("volume")
+plt.ylim(0, 800)
 plt.show(figsize=(12, 6))
