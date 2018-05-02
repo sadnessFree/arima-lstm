@@ -27,7 +27,7 @@ reframed = series_to_supervised(scaled, look_back, 1)
 print(reframed.head())
 
 values = reframed.values
-lstm_size = arima.size - look_back
+lstm_size = arima.start + arima.size - look_back
 test = values[lstm_size:lstm_size + arima.test_size, :]
 test_X, test_y = test[:, :-1], test[:, -1]
 # reshape input to be 3D [samples, timesteps, features]
@@ -59,7 +59,7 @@ plt.plot(inv_yhat, 'x--', color='red', label="LSTM")
 plt.legend(loc='upper left')
 plt.xlabel("period")
 plt.ylabel("volume")
-plt.ylim(0, 800)
+plt.ylim(0, 1000)
 plt.show(figsize=(12, 6))
 
 combined = list()
@@ -101,5 +101,5 @@ plt.plot(dyn_combined, 'x--', color='g', label="combined")
 plt.legend(loc='upper left')
 plt.xlabel("period")
 plt.ylabel("volume")
-plt.ylim(0, 800)
+plt.ylim(0, 1000)
 plt.show(figsize=(12, 6))

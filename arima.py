@@ -28,10 +28,10 @@ X = X.astype('float32')
 
 # x = test_stationarity(X)
 # v, p, q, i = proper_model(X, 10)
-start = 0
-size = 1400
-test_size = 200
-arima_train, arima_test = X[start:size], X[size:size + test_size]
+start = 4600
+size = 1600
+test_size = 500
+arima_train, arima_test = X[start:start + size], X[start + size:start + size + test_size]
 history = [x for x in arima_train]
 predictions = list()
 # order = st.arma_order_select_ic(X, max_ar=6, max_ma=6, ic=['aic', 'bic', 'hqic'])
@@ -39,7 +39,7 @@ predictions = list()
 # model = ARIMA(history, order=(5, 1, 1)).fit()
 # predictions = model.predict(1000, 1019, dynamic=True)
 for t in range(len(arima_test)):
-    model = ARIMA(history, order=(5, 0, 5))
+    model = ARIMA(history, order=(5, 0, 1))
     model_fit = model.fit(disp=0)
     output = model_fit.forecast()
     yhat = output[0]
@@ -57,5 +57,5 @@ plt.plot(predictions, 'x--', color='red', label="ARIMA")
 plt.legend(loc='upper left')
 plt.xlabel("period")
 plt.ylabel("volume")
-plt.ylim(0, 800)
+plt.ylim(0, 1000)
 plt.show(figsize=(12, 6))
