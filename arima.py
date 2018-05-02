@@ -28,9 +28,9 @@ X = X.astype('float32')
 
 # x = test_stationarity(X)
 # v, p, q, i = proper_model(X, 10)
-start = 4600
-size = 1600
-test_size = 500
+start = 0
+size = 1200
+test_size = 100
 arima_train, arima_test = X[start:start + size], X[start + size:start + size + test_size]
 history = [x for x in arima_train]
 predictions = list()
@@ -39,7 +39,7 @@ predictions = list()
 # model = ARIMA(history, order=(5, 1, 1)).fit()
 # predictions = model.predict(1000, 1019, dynamic=True)
 for t in range(len(arima_test)):
-    model = ARIMA(history, order=(5, 0, 1))
+    model = ARIMA(history, order=(5, 0, 0))
     model_fit = model.fit(disp=0)
     output = model_fit.forecast()
     yhat = output[0]
@@ -53,9 +53,9 @@ mape = mean_a_p_e(arima_test, predictions)
 print('ARIMA Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, error, math.sqrt(error), mape))
 # plot
 plt.plot(arima_test, '-', label="real flow")
-plt.plot(predictions, 'x--', color='red', label="ARIMA")
-plt.legend(loc='upper left')
-plt.xlabel("period")
-plt.ylabel("volume")
-plt.ylim(0, 1000)
+plt.plot(predictions, 'x--', color='g', label="ARIMA")
+plt.legend(loc='upper right')
+plt.xlabel("period(15-minute intervals)")
+plt.ylabel("volume(vehicle/period)")
+plt.ylim(0, 800)
 plt.show(figsize=(12, 6))

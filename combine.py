@@ -9,7 +9,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.preprocessing import MinMaxScaler
 from muilt_lstm import series_to_supervised
 
-look_back = 8
+look_back = 10
 
 # 加载数据
 dataframe = pandas.read_csv('/Users/daihanru/Desktop/arima-lstm/DataSet/FEB15-2.csv', usecols=[2, 3], engine='python',
@@ -55,11 +55,11 @@ mae = mean_absolute_error(inv_y, inv_yhat)
 mape = arima.mean_a_p_e(inv_y, inv_yhat)
 print('LSTM Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, mse, rmse, mape))
 plt.plot(inv_y, '-', label="real flow")
-plt.plot(inv_yhat, 'x--', color='red', label="LSTM")
-plt.legend(loc='upper left')
-plt.xlabel("period")
-plt.ylabel("volume")
-plt.ylim(0, 1000)
+plt.plot(inv_yhat, 'x--', color='g', label="LSTM")
+plt.legend(loc='upper right')
+plt.xlabel("period(15-minute intervals)")
+plt.ylabel("volume(vehicle/period)")
+plt.ylim(0, 800)
 plt.show(figsize=(12, 6))
 
 combined = list()
@@ -95,11 +95,11 @@ print('dyn combined Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, mse, rm
 
 plt.figure()
 plt.plot(inv_y, '-', label="real flow")
-plt.plot(arima.predictions, 'x--', color='y', label="ARIMA")
-plt.plot(inv_yhat, 'x--', color='red', label="LSTM")
+# plt.plot(arima.predictions, 'x--', color='y', label="ARIMA")
+# plt.plot(inv_yhat, 'x--', color='red', label="LSTM")
 plt.plot(dyn_combined, 'x--', color='g', label="combined")
-plt.legend(loc='upper left')
-plt.xlabel("period")
-plt.ylabel("volume")
-plt.ylim(0, 1000)
+plt.legend(loc='upper right')
+plt.xlabel("period(15-minute intervals)")
+plt.ylabel("volume(vehicle/period)")
+plt.ylim(0, 800)
 plt.show(figsize=(12, 6))

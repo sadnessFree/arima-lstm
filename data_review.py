@@ -19,6 +19,10 @@ series = read_csv('/Users/daihanru/Desktop/arima-lstm/DataSet/FEB15.csv', usecol
                   index_col=0,
                   squeeze=True,
                   date_parser=parser)
-X = series.values[0:1600]
-plt.plot(X)
-plt.show()
+X = series.values[0:1000]
+plt.plot(X, '-', label="real flow")
+plt.legend(loc='upper right')
+plt.xlabel("period(15-minute intervals)")
+plt.ylabel("volume(vehicle/period)")
+# plt.ylim(0, 800)
+plt.show(figsize=(12, 6))
