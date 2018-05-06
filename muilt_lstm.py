@@ -66,7 +66,7 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
 # train_start = 0
 # train_size = 1000
 # train = values[train_start:train_start + train_size, :]
-# test = values[1200:1300, :]
+# test = values[1300:1400, :]
 # # split into input and outputs
 # train_X, train_y = train[:, :-1], train[:, -1]
 # test_X, test_y = test[:, :-1], test[:, -1]
@@ -77,11 +77,11 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
 #
 # # design network
 # model = Sequential()
-# model.add(LSTM(4, input_shape=(train_X.shape[1], train_X.shape[2])))
+# model.add(LSTM(50, input_shape=(train_X.shape[1], train_X.shape[2])))
 # model.add(Dense(1))
 # model.compile(loss='mean_squared_error', optimizer='adam')
 # # fit network
-# history = model.fit(train_X, train_y, epochs=500, batch_size=10, validation_data=(test_X, test_y), verbose=2,
+# history = model.fit(train_X, train_y, epochs=500, batch_size=20, validation_data=(test_X, test_y), verbose=2,
 #                     shuffle=False)
 # model.save('../model/lstm.h5')
 # # plot history

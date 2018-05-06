@@ -29,8 +29,8 @@ X = X.astype('float32')
 # x = test_stationarity(X)
 # v, p, q, i = proper_model(X, 10)
 start = 0
-size = 1200
-test_size = 100
+size = 1100
+test_size = 200
 arima_train, arima_test = X[start:start + size], X[start + size:start + size + test_size]
 history = [x for x in arima_train]
 predictions = list()
@@ -53,7 +53,7 @@ mape = mean_a_p_e(arima_test, predictions)
 print('ARIMA Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, error, math.sqrt(error), mape))
 # plot
 plt.plot(arima_test, '-', label="real flow")
-plt.plot(predictions, 'x--', color='g', label="ARIMA")
+plt.plot(predictions, '--', color='red', label="ARIMA")
 plt.legend(loc='upper right')
 plt.xlabel("period(15-minute intervals)")
 plt.ylabel("volume(vehicle/period)")
