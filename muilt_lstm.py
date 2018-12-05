@@ -5,6 +5,7 @@ from matplotlib import pyplot
 from pandas import read_csv
 from pandas import DataFrame
 from pandas import concat
+import matplotlib
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
@@ -45,7 +46,8 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
         agg.dropna(inplace=True)
     return agg
 
-
+# matplotlib.rcParams['font.family'] = 'SimHei'
+#
 # # load dataset
 # dataset = read_csv('/Users/daihanru/Desktop/arima-lstm/DataSet/FEB15-2.csv', usecols=[2, 3], header=0,
 #                    index_col=0)
@@ -63,10 +65,10 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
 #
 # # split into train and test sets
 # values = reframed.values
-# train_start = 0
+# train_start = 2000
 # train_size = 1000
 # train = values[train_start:train_start + train_size, :]
-# test = values[1300:1400, :]
+# test = values[3400:3500, :]
 # # split into input and outputs
 # train_X, train_y = train[:, :-1], train[:, -1]
 # test_X, test_y = test[:, :-1], test[:, -1]
@@ -77,16 +79,18 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
 #
 # # design network
 # model = Sequential()
-# model.add(LSTM(50, input_shape=(train_X.shape[1], train_X.shape[2])))
+# model.add(LSTM(10, input_shape=(train_X.shape[1], train_X.shape[2])))
 # model.add(Dense(1))
 # model.compile(loss='mean_squared_error', optimizer='adam')
 # # fit network
-# history = model.fit(train_X, train_y, epochs=500, batch_size=20, validation_data=(test_X, test_y), verbose=2,
+# history = model.fit(train_X, train_y, epochs=10000, batch_size=1000, validation_data=[test_X, test_y], verbose=2,
 #                     shuffle=False)
-# model.save('../model/lstm.h5')
+# model.save('../model/lstm-15min.h5')
 # # plot history
-# pyplot.plot(history.history['loss'], label='train')
-# pyplot.plot(history.history['val_loss'], label='test')
+# pyplot.plot(history.history['loss'], label='训练')
+# pyplot.plot(history.history['val_loss'], label='测试')
+# pyplot.xlabel("迭代次数")
+# pyplot.ylabel("loss值")
 # pyplot.legend()
 # pyplot.show()
 #

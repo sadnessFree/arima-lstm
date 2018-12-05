@@ -8,8 +8,13 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
 from sklearn.preprocessing import MinMaxScaler
 from muilt_lstm import series_to_supervised
+from sklearn import svm
+from sklearn.ensemble.gradient_boosting import GradientBoostingRegressor
 
 look_back = 10
+line_test_size = 300
+windows_size = 5
+test_start = line_test_size + windows_size - 1
 
 # 加载数据
 dataframe = pandas.read_csv('/Users/daihanru/Desktop/arima-lstm/DataSet/FEB15-2.csv', usecols=[2, 3], engine='python',
@@ -50,13 +55,13 @@ inv_y = numpy.concatenate((test_y, test_X[:, 1:]), axis=1)
 inv_y = scaler.inverse_transform(inv_y)
 inv_y = inv_y[:, 0]
 # calculate RMSE
-mse = mean_squared_error(inv_y[arima.test_start:], inv_yhat[arima.test_start:])
-rmse = math.sqrt(mean_squared_error(inv_y[arima.test_start:], inv_yhat[arima.test_start:]))
-mae = mean_absolute_error(inv_y[arima.test_start:], inv_yhat[arima.test_start:])
-mape = arima.mean_a_p_e(inv_y[arima.test_start:], inv_yhat[arima.test_start:])
+mse = mean_squared_error(inv_y[test_start:], inv_yhat[test_start:])
+rmse = math.sqrt(mean_squared_error(inv_y[test_start:], inv_yhat[test_start:]))
+mae = mean_absolute_error(inv_y[test_start:], inv_yhat[test_start:])
+mape = arima.mean_a_p_e(inv_y[test_start:], inv_yhat[test_start:])
 print('LSTM Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, mse, rmse, mape))
-plt.plot(inv_y[arima.test_start:], '-', label="real flow")
-plt.plot(inv_yhat[arima.test_start:], '--', color='red', label="LSTM")
+plt.plot(inv_y[test_start:], '-', label="real flow")
+plt.plot(inv_yhat[test_start:], '--', color='red', label="LSTM")
 plt.legend(loc='upper right')
 plt.xlabel("period(15-minute intervals)")
 plt.ylabel("volume(vehicle/period)")
@@ -66,39 +71,48 @@ plt.show(figsize=(12, 6))
 combined = list()
 for i in range(len(inv_yhat)):
     combined.append((inv_yhat[i] + arima.predictions[i]) / 2)
-mse = mean_squared_error(inv_y[arima.test_start:], combined[arima.test_start:])
-rmse = math.sqrt(mean_squared_error(inv_y[arima.test_start:], combined[arima.test_start:]))
-mae = mean_absolute_error(inv_y[arima.test_start:], combined[arima.test_start:])
-mape = arima.mean_a_p_e(inv_y[arima.test_start:], combined[arima.test_start:])
+mse = mean_squared_error(inv_y[test_start:], combined[test_start:])
+rmse = math.sqrt(mean_squared_error(inv_y[test_start:], combined[test_start:]))
+mae = mean_absolute_error(inv_y[test_start:], combined[test_start:])
+mape = arima.mean_a_p_e(inv_y[test_start:], combined[test_start:])
 print('EW combined Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, mse, rmse, mape))
 
-windows_size = 1
-lstm_error_list = []
-arima_error_list = []
-lstm_weight = 1
-arima_weight = 1
 dyn_combined = list()
-for i in range(len(inv_yhat)):
-    if len(lstm_error_list) > 0:
-        lstm_error = math.pow(numpy.sum(lstm_error_list[-windows_size:]), 1 / 2) / math.pow(windows_size, 1 / 2)
-        arima_error = math.pow(numpy.sum(arima_error_list[-windows_size:]), 1 / 2) / math.pow(windows_size, 1 / 2)
-        lstm_weight = (1 - lstm_error / (lstm_error + arima_error)) * 2
-        arima_weight = 2 - lstm_weight
-    lstm_error_list.append(math.pow(inv_yhat[i] - inv_y[i], 2))
-    arima_error_list.append(math.pow(arima.predictions[i] - inv_y[i], 2))
-    dyn_combined.append((lstm_weight * inv_yhat[i] + arima_weight * arima.predictions[i]) / 2)
+model = GradientBoostingRegressor()
+line_train_x = []
+line_train_y = []
+for i in range(line_test_size - windows_size + 1):
+    for j in range(windows_size):
+        line_train_x.append(arima.predictions[i + j][0])
+    for j in range(windows_size):
+        line_train_x.append(inv_yhat[i + j])
+    line_train_y.append(inv_y[i + windows_size - 1])
+line_train_x = numpy.array(line_train_x).reshape(line_test_size - windows_size + 1, 2 * windows_size)
+# line_train_x = scaler.fit_transform(line_train_x)
+model.fit(line_train_x, line_train_y)
 
-mse = mean_squared_error(inv_y[arima.test_start:], dyn_combined[arima.test_start:])
-rmse = math.sqrt(mean_squared_error(inv_y[arima.test_start:], dyn_combined[arima.test_start:]))
-mae = mean_absolute_error(inv_y[arima.test_start:], dyn_combined[arima.test_start:])
-mape = arima.mean_a_p_e(inv_y[arima.test_start:], dyn_combined[arima.test_start:])
+line_test_x = []
+for i in range(arima.test_size - line_test_size - windows_size + 1):
+    for j in range(windows_size):
+        line_test_x.append(arima.predictions[line_test_size + i + j][0])
+    for j in range(windows_size):
+        line_test_x.append(inv_yhat[line_test_size + i + j])
+line_test_x = numpy.array(line_test_x).reshape(arima.test_size - line_test_size - windows_size + 1,
+                                               2 * windows_size)
+# line_test_x = scaler.fit_transform(line_test_x)
+dyn_combined = model.predict(line_test_x)
+
+mse = mean_squared_error(inv_y[test_start:], dyn_combined)
+rmse = math.sqrt(mean_squared_error(inv_y[test_start:], dyn_combined))
+mae = mean_absolute_error(inv_y[test_start:], dyn_combined)
+mape = arima.mean_a_p_e(inv_y[test_start:], dyn_combined)
 print('dyn combined Test MAE:%.3f MSE: %.3f RMSE:%.3f MAPE:%.3f' % (mae, mse, rmse, mape))
 
 plt.figure()
-plt.plot(inv_y[arima.test_start:], '-', label="real flow")
+plt.plot(inv_y[test_start:], '-', label="real flow")
 # plt.plot(arima.predictions, 'x--', color='y', label="ARIMA")
 # plt.plot(inv_yhat, 'x--', color='red', label="LSTM")
-plt.plot(dyn_combined[arima.test_start:], '--', color='red', label="combined")
+plt.plot(dyn_combined, '--', color='red', label="combined")
 plt.legend(loc='upper right')
 plt.xlabel("period(15-minute intervals)")
 plt.ylabel("volume(vehicle/period)")
